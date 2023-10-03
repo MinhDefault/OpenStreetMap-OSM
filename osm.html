@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Location Tracker and Warning</title>
+
+    <!-- leaflet css -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 700px;
+            width: 100%;
+            height: calc(99vh - 40px); /* Adjusted height to leave space for the buttons-container */
+        }
+
+        .buttons-container {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+
+        .buttons-container button {
+            margin: 5px;
+        }
+
+        .layer-checkboxes {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .layer-checkboxes label {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <div id="map"></div>
+    <div class="buttons-container">
+        <button id="showLocationButton">Show My Location</button>
+    </div>
+
+    <div class="layer-checkboxes">
+        <input type="checkbox" id="temperatureLayerCheckbox" checked label for="temperatureLayerCheckbox"><a href="osm01.html">Temperature Layer</a></label>
+        <input type="checkbox" id="floodLayerCheckbox" checked label for="floodLayerCheckbox"><a href="index2.html">Flood Layer</a></label>
+        <input type="checkbox" id="StartTrackingCheckbox" checked label for="StartTrackingCheckbox"><a href="check.html">StartTracking</a></label>
+    </div>
+
+    <!-- leaflet js -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Wait for the DOM to be fully loaded before executing the code
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var map;
+            var myLocationMarker;
+            var tracking = false;
+            var intervalId;
+
+            // Function to initialize the Leaflet map
+            function initializeMap() {
+                map = L.map('map').setView([21.0285, 105.8542], 13);
+                var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                });
+
+                var esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '&copy; <a href="https://www.esri.com/">Esri</a>'
+                });
+
+                osm.addTo(map);
+
+                // Add event listeners to buttons
+               
+                document.getElementById('showLocationButton').addEventListener('click', showMyLocation);
+
+                // Add layer control
+                var baseMaps = {
+                    "OpenStreetMap": osm,
+                    "Satellite": esriSatellite
+                };
+                var overlayMaps = {};
+                L.control.layers(baseMaps, overlayMaps, { position: 'bottomright' }).addTo(map);
+            }
+
+            // Function to update the current location on the map
+            function updateLocation() {
+                navigator.geolocation.getCurrentPosition(getPosition);
+            }
+
+            // Function to handle the position data and update the marker
+            function getPosition(position) {
+                var lat = position.coords.latitude;
+                var long = position.coords.longitude;
+                var accuracy = position.coords.accuracy;
+
+                if (myLocationMarker) {
+                    myLocationMarker.setLatLng([lat, long]); // Update marker position
+                } else {
+                    myLocationMarker = L.marker([lat, long]).addTo(map); // Create marker if not exists
+                }
+
+                // Update the map view to the updated location and adjust zoom level if desired
+                map.setView([lat, long], 15);
+
+                console.log("Your coordinate is: Lat: " + lat + " Long: " + long + " Accuracy: " + accuracy);
+            }
+
+            // Function to show the user's current location on the map
+            function showMyLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        var lat = position.coords.latitude;
+                        var long = position.coords.longitude;
+                        if (myLocationMarker) {
+                            myLocationMarker.setLatLng([lat, long]); // Update marker position
+                        } else {
+                            myLocationMarker = L.marker([lat, long]).addTo(map); // Create marker if not exists
+                        }
+                        map.setView([lat, long], 15); // Set the map view to the current location with higher zoom
+                    });
+                } else {
+                    console.log("Your browser doesn't support geolocation feature!");
+                }
+            }
+
+            // Call the function to initialize the realtime location tracker
+            initializeMap();
+
+        });
+
+    </script>
+</body>
+
+</html>

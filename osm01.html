@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <link rel="stylesheet" href="osm.css">
+    <title>temperature01</title>
+</head>
+<body>
+    <style>
+       html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      position: relative; /* Added position relative to make sure the note is positioned relative to the body */
+    }
+
+    img {
+        height: 24px;
+        width: 24px;
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+      z-index: 1; /* Set the map's z-index to 1 */
+    }
+    .note {
+        position: absolute;
+        top: 100px; /* Adjust the value to position the note vertically */
+        right: 10px; /* Adjust the value to position the note horizontally */
+        background-color: #f1f1f1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        z-index: 2; /* Set the note's z-index to a higher value to push it above the map */
+      }
+    </style>    
+    
+    <div id="map"></div>
+    <div class="note">
+        <table>
+            <tr>
+                <th colspan="3">Cảnh báo mức nhiệt
+                </th>
+            </tr>
+            <tr>
+                <td><img src="D:\Dino4Squad\img\Capture.PNG" alt=""></td>
+                <td>25°C-35°C</td>
+            </tr>
+            <tr>
+                <td><img src="D:\Dino4Squad\img\đỏ cam.PNG" alt=""></td>
+                <td>35°C-38°C</td>
+            </tr>
+            <tr>
+                <td><img src="D:\Dino4Squad\img\đỏ nâu.PNG" alt=""></td>
+                <td>38°C-42°C</td>
+            </tr>
+            <tr>
+                <td><img src="D:\Dino4Squad\img\đỏ.PNG" alt=""></td>
+                <td>trên 42°C</td>
+            </tr>
+        </table>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    
+    <!-- <script src="D:\OSM\OSM\osm.js"></script> -->
+
+    <script>
+        function getColor(temperature) {
+            // if (temperature >= 0 && temperature <= 25) {
+            //     return '#008080';
+            // } else if (temperature > 10 && temperature <= 14) {
+            //     return '#1B4F93'; 
+            // } else if (temperature > 14 && temperature <= 18) {
+            //     return '#205AA7';
+            // } else if (temperature > 18 && temperature <= 25) {
+            //     return '#94AAD6'; } else 
+           if (temperature > 25 && temperature <= 35) { 
+                return '#FEF889'; 
+            } else if (temperature > 35 && temperature <= 38) {
+                return '#EB7153'; 
+            } else if (temperature > 38 && temperature <= 42) {
+                return '#DF0029'; 
+            } else {
+                return '#FF0000';
+            }
+        }
+        googleSat = L.tileLayer(
+            "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+            {
+                maxZoom: 20,
+                subdomains: ["mt0", "mt1", "mt2", "mt3"],
+            });
+        var temperaturePoints = [
+            [21.04313, 105.76701, 40],
+            [21.0672, 105.7791, 37],
+            [21.0533, 105.7801, 38],
+            [21.07421, 105.77563, 39],
+            [21.057792, 105.778510, 36]
+        ];        
+        var map = L.map('map').setView([21.02014554822514, 105.784259312448], 13);
+        googleSat = L.tileLayer(
+            "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+            {
+                maxZoom: 20,
+                subdomains: ["mt0", "mt1", "mt2", "mt3"],
+            });
+        maptemp = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        for (var i = 0; i < temperaturePoints.length; i++) {
+            var point = temperaturePoints[i];
+            var temperature = point[2];
+
+            // khoanh vùng khu vực 
+            var circle = L.circle([point[0], point[1]], {
+                radius: 250,
+                color: Node, // Replace "Node" with a valid color value or remove it.
+                fillColor: getColor(temperature),
+                fillOpacity: 0.5
+            }).addTo(map);
+
+            // Add a popup showing the temperature value
+            circle.bindPopup("Temperature: " + temperature + "°C");
+        }
+        var baseLayers = {
+            "Vệ tinh": googleSat,
+            "Bản đồ nhiệt": maptemp
+        };
+        var overlays = {
+            " Hiển thị khu vực": map,
+        }
+        var layerControl = L.control.layers(baseLayers, overlays).addTo(map);
+    </script>
+
+</body>
+</html>
